@@ -85,6 +85,8 @@
 #include "utils/StringUtils.h"
 #include "Util.h"
 #include "LangInfo.h"
+//--ts--
+#include "torrentstream/torrentstream.h"
 
 using namespace std;
 using namespace PVR;
@@ -2010,10 +2012,34 @@ void CDVDPlayer::OnExit()
   // if we didn't stop playing, advance to the next item in xbmc's playlist
   if(m_PlayerOptions.identify == false)
   {
-    if (m_bAbortRequest)
-      m_callback.OnPlayBackStopped();
-    else
-      m_callback.OnPlayBackEnded();
+	  //--ts--
+	    if (m_bAbortRequest)
+	    {
+	    	if( g_torrentStream.isStarted() )
+	    	{
+	    		g_torrentStream.Stop();
+	    		g_torrentStream.ResetFlags();
+	    	}
+	    	m_callback.OnPlayBackStopped();
+	    }
+
+	    else
+	    	{
+	    	  if( g_torrentStream.isStarted() )
+	    	  {
+	    	    g_torrentStream.SendPlayback(1, 1); //100%
+	    		if( !g_torrentStream.isWaitingMainContent() )
+	    		{
+	    		  g_torrentStream.ResetFlags();
+	    		  m_callback.OnPlayBackEnded();
+	    		}
+	    		else
+	    		  return;
+	    	  }
+	    	  else
+	    		m_callback.OnPlayBackEnded();
+	    	}
+
   }
 
   // set event to inform openfile something went wrong in case openfile is still waiting for this event
@@ -4026,6 +4052,13 @@ void CDVDPlayer::UpdatePlayState(double timeout)
 
   CSingleLock lock(m_StateSection);
   m_StateInput = state;
+
+  //--ts--
+  if(g_torrentStream.isStarted() && (m_StateInput.time != 0) && (m_StateInput.time_total != 0))
+  {
+	  g_torrentStream.SendDuration(m_StateInput.time_total);
+	  g_torrentStream.SendPlayback(m_StateInput.time, m_State.time_total);
+  }
 }
 
 void CDVDPlayer::UpdateApplication(double timeout)

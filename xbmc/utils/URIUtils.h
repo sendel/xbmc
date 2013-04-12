@@ -147,6 +147,10 @@ public:
    */
   static bool UpdateUrlEncoding(std::string &strFilename);
 
+  //--ts--
+  static bool IsTorrent(const CStdString& strFile);
+  static bool IsTorrentStreamPID(const CStdString& strFile);
+  static bool IsLoadedTorrent(const CStdString& strFile);
 private:
   static std::string resolvePath(const std::string &path);
 };

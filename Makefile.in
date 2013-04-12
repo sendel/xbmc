@@ -96,6 +96,7 @@ DIRECTORY_ARCHIVES=$(DVDPLAYER_ARCHIVES) \
 NWAOBJSXBMC=	xbmc/threads/threads.a \
 		xbmc/commons/commons.a
 
+DIRECTORY_ARCHIVES += xbmc/torrentstream/torrentstream.a
 
 ifeq (@USE_WEB_SERVER@,1)
 DIRECTORY_ARCHIVES += xbmc/network/httprequesthandler/httprequesthandlers.a

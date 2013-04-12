@@ -40,6 +40,8 @@
 #ifdef HAS_PYTHON
 #include "interfaces/python/XBPython.h"
 #endif
+//--ts--
+#include "torrentstream/torrentstream.h"
 #if defined(TARGET_WINDOWS)
 #include "input/windows/WINJoystick.h"
 #elif defined(HAS_SDL_JOYSTICK) 
@@ -93,3 +95,5 @@
 #endif
   CZipManager g_ZipManager;
 
+//--ts--
+  CTorrentStream     g_torrentStream;

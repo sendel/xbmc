@@ -404,7 +404,10 @@ public:
   CStdString m_strLockCode;
   int m_iHasLock; // 0 - no lock 1 - lock, but unlocked 2 - locked
   int m_iBadPwdCount;
-
+  //--ts--
+  bool IsTorrent() const;
+  bool IsTorrentStreamPID() const;
+  bool IsLoadedTorrent() const;
 private:
   CStdString m_strPath;            ///< complete path to item
 

@@ -165,6 +165,8 @@ public:
   void Insert(int iPlaylist, CFileItemList& items, int iIndex);
   void Remove(int iPlaylist, int iPosition);
   void Swap(int iPlaylist, int indexItem1, int indexItem2);
+  //--ts--
+  bool Play(CFileItem item, bool replace = false);
 protected:
   /*! \brief Returns true if the given is set to repeat all
    \param playlist Playlist to be query

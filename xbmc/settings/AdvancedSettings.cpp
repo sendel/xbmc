@@ -350,6 +350,10 @@ void CAdvancedSettings::Initialize()
   // internal video extensions
   m_videoExtensions += "|.pvr";
 
+  //--ts--
+  m_videoExtensions += "|.torrent|.acelive|.tstream|.acestream";
+  //m_musicExtensions += "|.torrent|.acelive|.tstream|.acestream"; //not shure for this
+
   m_logLevelHint = m_logLevel = LOG_LEVEL_NORMAL;
 
   #if defined(TARGET_DARWIN)

@@ -1141,3 +1141,53 @@ bool URIUtils::UpdateUrlEncoding(std::string &strFilename)
   strFilename = newFilename;
   return true;
 }
+
+//--ts--
+bool URIUtils::IsTorrent(const CStdString& strFile)
+{
+  CStdString strExtension;
+  GetExtension(strFile,strExtension);
+
+  if (strExtension.CompareNoCase(".torrent") == 0 || strExtension.CompareNoCase(".acelive") == 0 || strExtension.CompareNoCase(".tstream") == 0 || strExtension.CompareNoCase(".acestream") == 0)
+  {
+	cout << "torrent found" << endl;
+    return true;
+  }
+
+  return false;
+}
+//--ts--
+bool URIUtils::IsTorrentStreamPID(const CStdString& strFile)
+{
+	//there need check only last 40 chars before '/'
+	 CStdString strFileName;
+	 strFileName=GetFileName(strFile);
+
+
+	 //there need full check for hexstring!
+/*	boost::regex exp("/[0-9a-f]{32}/i");
+
+
+	bool r1 = boost::regex_match( strFileName, exp );
+	std::cout << "ISMD5" << r1 << std::endl;*/
+
+
+	  bool is_hash = false;
+	  CRegExp *m_tags = new CRegExp(true);
+	  is_hash = m_tags->RegComp("/[0-9a-f]{40}/i");
+	  delete m_tags;
+
+	  std::cout << "ISMD5" << is_hash << std::endl;
+
+	bool ret = (strFileName.length() == 40) &&
+		   (strFileName.find(':') == string::npos) &&
+		   (strFileName.Find('.') == string::npos);
+
+	return ret;
+}
+//--ts--
+bool URIUtils::IsLoadedTorrent(const CStdString& strFile)
+{
+	bool ret = strFile.Left(14).Equals("torrentstream:");
+	return ret;
+}

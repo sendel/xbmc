@@ -34,6 +34,8 @@
 #include "dialogs/GUIDialogKaiToast.h"
 #include "guilib/LocalizeStrings.h"
 #include "interfaces/AnnouncementManager.h"
+//--ts--
+#include "torrentstream/torrentstream.h"
 
 using namespace PLAYLIST;
 
@@ -256,6 +258,15 @@ bool CPlayListPlayer::Play(int iSong, bool bAutoPlay /* = false */, bool bPlayPr
   playlist.SetPlayed(true);
 
   m_bPlaybackStarted = false;
+
+  //--ts--send START command if item's path has "torrentstream:" prefix
+
+
+  if( item->IsTorrentStreamPID() || item->IsTorrent() || item->IsLoadedTorrent())
+  {
+	  CLog::Log(LOGNOTICE, "PLAY torrent %s" , item->GetPath().c_str());
+  	  return g_torrentStream.Start( item, m_iCurrentPlayList );
+  }
 
   unsigned int playAttempt = XbmcThreads::SystemClockMillis();
   if (!g_application.PlayFile(*item, bAutoPlay))
@@ -692,3 +703,36 @@ void CPlayListPlayer::AnnouncePropertyChanged(int iPlaylist, const std::string &
   data["property"][strProperty] = value;
   ANNOUNCEMENT::CAnnouncementManager::Announce(ANNOUNCEMENT::Player, "xbmc", "OnPropertyChanged", data);
 }
+
+//--ts-- example!! somthing like [bool Play(int index, bool replace = false, bool playPreviousOnFail = false)]
+bool CPlayListPlayer::Play(CFileItem item, bool bAutoPlay )
+{
+  CLog::Log(LOGNOTICE,"Playlist Player: start play item: %i, path [%s]", m_iCurrentSong, item.GetPath().c_str());
+
+  CPlayList& playlist = GetPlaylist(m_iCurrentPlayList);
+  if (playlist.size() <= 0)
+    return false;
+
+  playlist.SetPlayed(true);
+  m_bPlaybackStarted = false;
+
+  unsigned int playAttempt = XbmcThreads::SystemClockMillis();
+  //
+  if (!g_application.PlayFile(item, bAutoPlay))
+  {
+    CLog::Log(LOGERROR,"Playlist Player: cannot play item: %i, path [%s]", m_iCurrentSong, item.GetPath().c_str());
+    CGUIDialogOK::ShowAndGetInput(16026, 16027, 16029, 0);
+	CGUIMessage msg(GUI_MSG_PLAYLISTPLAYER_STOPPED, 0, 0, m_iCurrentPlayList, m_iCurrentSong);
+    g_windowManager.SendThreadMessage(msg);
+	GetPlaylist(m_iCurrentPlayList).Clear();
+    m_iCurrentPlayList = PLAYLIST_NONE;
+    return false;
+  }
+
+  m_iFailedSongs = 0;
+  m_failedSongsStart = 0;
+  m_bPlaybackStarted = true;
+  m_bPlayedFirstFile = true;
+  return true;
+}
+

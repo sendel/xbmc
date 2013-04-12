@@ -3240,3 +3240,19 @@ int CFileItem::GetVideoContentType() const
   return type;
 }
 
+//--ts--
+bool CFileItem::IsTorrent() const
+{
+  return URIUtils::IsTorrent(m_strPath);
+}
+//--ts--
+bool CFileItem::IsTorrentStreamPID() const
+{
+  return URIUtils::IsTorrentStreamPID(m_strPath);
+}
+//--ts--
+bool CFileItem::IsLoadedTorrent() const
+{
+	return URIUtils::IsLoadedTorrent(m_strPath);
+}
+
