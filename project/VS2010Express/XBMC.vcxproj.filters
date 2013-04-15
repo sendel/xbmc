@@ -301,6 +301,9 @@
     <Filter Include="input\touch\generic">
       <UniqueIdentifier>{d062c356-66f2-49e7-9510-b216701d2298}</UniqueIdentifier>
     </Filter>
+    <Filter Include="torrentstream">
+      <UniqueIdentifier>{23dba68d-837e-4fc6-9103-63ca246fd01f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\xbmc\win32\pch.cpp">
@@ -2991,6 +2994,15 @@
     <ClCompile Include="..\..\xbmc\filesystem\MusicDatabaseDirectory\DirectoryNodeGrouped.cpp">
       <Filter>filesystem\MusicDatabaseDirectory</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\xbmc\playlists\PlayListTorrent.cpp">
+      <Filter>playlists</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\torrentstream\p2pcontrol.cpp">
+      <Filter>torrentstream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\xbmc\torrentstream\torrentstream.cpp">
+      <Filter>torrentstream</Filter>
+    </ClCompile>    
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\xbmc\win32\pch.h">
@@ -5846,6 +5858,15 @@
     <ClInclude Include="..\..\xbmc\filesystem\MusicDatabaseDirectory\DirectoryNodeGrouped.h">
       <Filter>filesystem\MusicDatabaseDirectory</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\xbmc\playlists\PlayListTorrent.h">
+      <Filter>playlists</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\torrentstream\p2pcontrol.h">
+      <Filter>torrentstream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\xbmc\torrentstream\torrentstream.h">
+      <Filter>torrentstream</Filter>
+    </ClInclude>    
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\xbmc\win32\XBMC_PC.rc">

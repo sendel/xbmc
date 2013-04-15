@@ -881,6 +881,8 @@
     <ClCompile Include="..\..\xbmc\pictures\PictureInfoLoader.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\PictureInfoTag.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\PictureThumbLoader.cpp" />
+    <ClCompile Include="..\..\xbmc\torrentstream\p2pcontrol.cpp" />
+    <ClCompile Include="..\..\xbmc\torrentstream\torrentstream.cpp" />
     <ClCompile Include="..\..\xbmc\pictures\SlideShowPicture.cpp" />
     <ClCompile Include="..\..\xbmc\PlayListPlayer.cpp" />
     <ClCompile Include="..\..\xbmc\playlists\PlayList.cpp" />
@@ -888,6 +890,7 @@
     <ClCompile Include="..\..\xbmc\playlists\PlayListFactory.cpp" />
     <ClCompile Include="..\..\xbmc\playlists\PlayListM3U.cpp" />
     <ClCompile Include="..\..\xbmc\playlists\PlayListPLS.cpp" />
+    <ClCompile Include="..\..\xbmc\playlists\PlayListTorrent.cpp" />
     <ClCompile Include="..\..\xbmc\playlists\PlayListURL.cpp" />
     <ClCompile Include="..\..\xbmc\playlists\PlayListWPL.cpp" />
     <ClCompile Include="..\..\xbmc\playlists\PlayListXML.cpp" />
@@ -2302,6 +2305,7 @@
     <ClInclude Include="..\..\xbmc\playlists\PlayListURL.h" />
     <ClInclude Include="..\..\xbmc\playlists\PlayListWPL.h" />
     <ClInclude Include="..\..\xbmc\playlists\PlayListXML.h" />
+    <ClInclude Include="..\..\xbmc\playlists\PlayListTorrent.h" />
     <ClInclude Include="..\..\xbmc\playlists\SmartPlayList.h" />
     <ClInclude Include="..\..\xbmc\powermanagement\DPMSSupport.h" />
     <ClInclude Include="..\..\xbmc\powermanagement\IPowerSyscall.h" />
@@ -2385,6 +2389,8 @@
     <ClInclude Include="..\..\xbmc\TextureDatabase.h" />
     <ClInclude Include="..\..\xbmc\DatabaseManager.h" />
     <ClInclude Include="..\..\xbmc\ThumbLoader.h" />
+    <ClInclude Include="..\..\xbmc\torrentstream\p2pcontrol.h" />
+    <ClInclude Include="..\..\xbmc\torrentstream\torrentstream.h" />
     <ClInclude Include="..\..\xbmc\video\PlayerController.h" />
     <ClInclude Include="..\..\xbmc\video\VideoThumbLoader.h" />
     <ClInclude Include="..\..\xbmc\music\MusicThumbLoader.h" />
