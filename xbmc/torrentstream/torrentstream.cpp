@@ -8,6 +8,7 @@
 #include "playlists/PlayListTorrent.h"
 #include "ApplicationMessenger.h"
 #include <stdlib.h>
+#include <iostream>
 CTorrentStream::CTorrentStream(void)
 {
 	p_p2pcontrol = NULL;
