@@ -1175,15 +1175,14 @@ bool URIUtils::IsTorrentStreamPID(const CStdString& strFile)
 
 
 	  bool is_hash = false;
-	  CRegExp *m_tags = new CRegExp(true);
-	  is_hash = m_tags->RegComp("/[0-9a-f]{40}/i");
-	  delete m_tags;
+	  CRegExp m_tags (true);
+	  m_tags.RegComp("([0-9a-f]{40})");
+	  if (m_tags.RegFind(strFile.c_str()) > -1)is_hash = true;
 
 	  std::cout << "ISMD5" << is_hash << std::endl;
 
 	bool ret = (strFileName.length() == 40) &&
-		   (strFileName.find(':') == string::npos) &&
-		   (strFileName.Find('.') == string::npos);
+			is_hash ;
 
 	return ret;
 }

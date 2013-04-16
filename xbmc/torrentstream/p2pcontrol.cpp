@@ -26,6 +26,10 @@
 #include <stdarg.h>
 #endif
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0 // no support
+#endif // MSG_NOSIGNAL
+
 #include "utils/log.h"
 
 /*************************
@@ -137,7 +141,7 @@ bool BGPConnection::sendMsg( const std::string& event ) const
     /* Complete message */
     std::string msg = event + "\r\n";
     /* Send Event */
-    res = send( mServerSocket, msg.c_str(), msg.length(), 0 );
+    res = send( mServerSocket, msg.c_str(), msg.length(), MSG_NOSIGNAL );
     CLog::Log(LOGNOTICE, "connection=%u: BGPConnection: Sending: %s", this, event.c_str() );
     if( res == SOCKET_ERROR )
 	{
@@ -244,6 +248,7 @@ P2PControl::P2PControl( const int port, const std::string bgAddress ) :
 P2PControl::~P2PControl()
 {
     shutdown();
+    delete mConnection;
 }
 
 bool P2PControl::checkBG(bool startup)
@@ -388,6 +393,7 @@ bool P2PControl::shutdown()
     mConnection->sendMsg( "SHUTDOWN" );
 #ifdef _WIN32
     DWORD res;
+    //its not good way if BG was shutdown.
     res = WaitForSingleObject( mSyncEvent, 2000 );
     if( res == WAIT_TIMEOUT )
         CLog::Log(LOGERROR,"connection=%u: Sync Error while closing thread", mConnection);
@@ -398,7 +404,7 @@ bool P2PControl::shutdown()
 
 #else
  //linux thread waiting
-    struct timespec ts;
+   /* struct timespec ts;
     if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
     	CLog::Log(LOGERROR,"clock_gettime");
     ts.tv_sec += 2; //wait 2000ms
@@ -408,14 +414,13 @@ bool P2PControl::shutdown()
     if (errno == ETIMEDOUT)
     	CLog::Log(LOGERROR,"connection=%u: Sync Error while closing thread", mConnection);
     else
-    	CLog::Log(LOGNOTICE,"connection=%u: P2PControl: Thread cleanly exited", mConnection);
-
+    	CLog::Log(LOGNOTICE,"connection=%u: P2PControl: Thread cleanly exited", mConnection);*/
+    pthread_join(mEventThread,NULL);
     sem_destroy(&mSyncEvent);
-    pthread_cancel(mEventThread);
+    CLog::Log(LOGNOTICE,"connection=%u: P2PControl: Thread cleanly exited", mConnection);
+    //pthread_cancel(mEventThread);
     //pthread_kill(mEventThread, 9); //may be need for force close thread
 #endif
-
-    delete mConnection;
     mProtoState = P_DOWN;
 
     return true;
@@ -681,11 +686,9 @@ bool  P2PControl::playback( const std::string target, int percent )
 bool P2PControl::userdata( int gender, int age )
 {
 	CLog::Log(LOGNOTICE, "P2PControl: Sending userdata: %i %i", gender, age );
-
-	char buffer[255];
-	snprintf(buffer,255,"USERDATA [{\"gender\": %i}, {\"age\": %i}]",gender, age);
-
-	std::string command = buffer;
+	CStdString command("");
+	command.Format("USERDATA [{\"gender\": %i}, {\"age\": %i}]",gender, age);
+	std::cout << command << std::endl;
 	return mConnection->sendMsg(command);
 }
 
@@ -703,9 +706,9 @@ void *P2PControl::eventLoop( void* params )
 
 #ifndef _WIN32
 	//need for the pthread close right
-	pthread_detach(pthread_self());
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	//pthread_detach(pthread_self());
+	//pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+	//pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 #endif
 
     BGPConnection* connection;
@@ -732,6 +735,7 @@ void *P2PControl::eventLoop( void* params )
 #ifdef _WIN32
     SetEvent( *syncEvent ); /* Main thread can delete ThreadParams now */
 #else
+    //may be try to use pthread_condition()
     sem_post(syncEvent);
 #endif
 
@@ -840,16 +844,19 @@ void *P2PControl::eventLoop( void* params )
             if(event != EV_STATUS && event != EV_AUTH)
                 CLog::Log(LOGNOTICE,"connection=%u: P2P Thread: Command: %s", connection, command.c_str());
 
+
+
+            equalEventsIt = eventMap->equal_range( event );
+            for( eventIt = equalEventsIt.first; eventIt != equalEventsIt.second; ++eventIt )
+                ( (*eventIt).second )->process( command.c_str() );
+
+
             if(event == EV_CLOSE)
 			{
                 CLog::Log(LOGERROR,"connection=%u: received EV_CLOSE: break thread loop", connection);
                 exitEventLoop = true;
                 break;
             }
-
-            equalEventsIt = eventMap->equal_range( event );
-            for( eventIt = equalEventsIt.first; eventIt != equalEventsIt.second; ++eventIt )
-                ( (*eventIt).second )->process( command.c_str() );
 
             //there sleep need
         }
@@ -859,7 +866,8 @@ void *P2PControl::eventLoop( void* params )
     SetEvent( *syncEvent ); /* Main thread can shut down now */
     return 0;
 #else
-    sem_post(syncEvent);
+    //sem_post(syncEvent);
+    pthread_exit(NULL);
     return NULL;
 #endif
 

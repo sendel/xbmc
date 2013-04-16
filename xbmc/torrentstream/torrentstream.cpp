@@ -29,7 +29,7 @@ CTorrentStream::~CTorrentStream(void)
 bool CTorrentStream::Initialize()
 {
 	srand (time(NULL));
-	if(p_p2pcontrol) {
+	if(isInitialized()) {
 		delete p_p2pcontrol;
 		p_p2pcontrol = NULL;
 	}
@@ -53,6 +53,8 @@ bool CTorrentStream::Initialize()
 	p_p2pcontrol->regEventCB< CTorrentStream >( EV_STATUS, this, &CTorrentStream::onP2PStatus );
 	p_p2pcontrol->regEventCB< CTorrentStream >( EV_STATE, this, &CTorrentStream::onP2PState );
 	p_p2pcontrol->regEventCB< CTorrentStream >( EV_LOADRESP, this, &CTorrentStream::onP2PLoad );
+	p_p2pcontrol->regEventCB< CTorrentStream >( EV_CLOSE, this, &CTorrentStream::onP2PClose );
+
 
 	/* we are ready to work */
 	return p_p2pcontrol->ready();
@@ -129,6 +131,7 @@ bool CTorrentStream::Load( const std::string id )
 	//Restart Engine
 	if(!ret) {
 		CLog::Log(LOGERROR,"Load: restart engine after error");
+		Clear();
 		Initialize();
 	}
 
@@ -845,4 +848,14 @@ void CTorrentStream::onP2PLoad( const char* statestr )
 	//g_application.
 	//g_playlistPlayer.GetCurrentPlaylist()
 	//i_p2pstate = atoi(statestr);
+}
+
+//If close when ACEStream down we try start it in next time
+void CTorrentStream::onP2PClose(const char* str)
+{
+	CLog::Log(LOGNOTICE,"onP2PCloseEvent");
+	Clear();
+	if(p_p2pcontrol)
+		delete p_p2pcontrol;
+	p_p2pcontrol=NULL;
 }

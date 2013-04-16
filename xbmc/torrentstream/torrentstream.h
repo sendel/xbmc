@@ -77,6 +77,7 @@ public:
 	void onP2PStatus( const char* );
 	void onP2PState( const char* );
 	void onP2PLoad( const char* );
+	void onP2PClose(const char* );
 
 private:
 	void Clear();
