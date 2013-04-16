@@ -79,9 +79,8 @@ bool CTorrentStream::Load( const std::string id )
 {
 	if( !p_p2pcontrol )
 		return false;
-	char buf[256];
-	snprintf(buf,255,"%i",rand());
-	ui_seesionid = buf;
+
+	ui_seesionid.Format("%i",rand());
 
 
 	/* checking id */

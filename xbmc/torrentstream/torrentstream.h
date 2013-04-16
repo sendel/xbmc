@@ -92,7 +92,7 @@ private:
 	CStdString	psz_playlist_path; //path to last playlist
 	int i_p2pauth;  // result of EV_AUTH
 	int i_p2pstate;  // result of EV_STATE
-	std::string ui_seesionid; //id for request
+	CStdString ui_seesionid; //id for request
 	int currentPlayList;
 
 	CFileItemPtr p_current_item;  // shared pointer to current processing item
