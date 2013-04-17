@@ -17,6 +17,7 @@
 #endif
 
 #include <sstream>
+#include <fstream>
 #include "ApplicationMessenger.h"
 
 #define P_DEBUG 2
@@ -41,6 +42,12 @@ BGPConnection::BGPConnection( const int port, const std::string bgAddress )
     mPort = port;
     mSocketState = S_DOWN;
     mRetVal = "";
+}
+
+void BGPConnection::setPort(const int port)
+{
+	disconnect();
+	mPort = port;
 }
 
 BGPConnection::~BGPConnection()
@@ -256,6 +263,12 @@ bool P2PControl::checkBG(bool startup)
     if( !mConnection->connect() )
 	{
     	mConnection->disconnect();
+    	if(!readBGconfig())
+    	{
+    		CLog::Log(LOGERROR,"read config error... Check your version of ACEStream (http://www.acestream.org)  and update if old!");
+    		return false;
+    	}
+
         if( !startBGProcess())
         {
         	return false;
@@ -426,6 +439,94 @@ bool P2PControl::shutdown()
     return true;
 }
 
+
+/*
+ * Read config for Win32 AceStream, may be fo linux for future
+ */
+#define ACESTREAM_BUFFER_SIZE 4096
+bool P2PControl::readBGconfig()
+{
+#ifdef _WIN32
+    LONG result;
+    HKEY hKey;
+    CHAR BGpath[ACESTREAM_BUFFER_SIZE]; // TODO : Fix this
+    DWORD bufLen = ACESTREAM_BUFFER_SIZE;
+
+    /* Look in the Windows registry to get the path of the BG */
+    result = RegOpenKeyEx( HKEY_LOCAL_MACHINE, PLUGIN_REG_KEY, 0, KEY_QUERY_VALUE, &hKey );
+    if( result != ERROR_SUCCESS )
+	{
+    	CLog::Log(LOGERROR,"Can't open ACEEngine key %s", PLUGIN_REG_KEY);
+		RegCloseKey( hKey );
+		return false;
+	}
+    result = RegQueryValueEx( hKey, BG_PATH_ELEMENT, NULL, NULL, (LPBYTE)BGpath, &bufLen);
+    if( result != ERROR_SUCCESS )
+	{
+    	CLog::Log(LOGERROR,"Can't get ACEEngine path %s", BG_PATH_ELEMENT);
+		RegCloseKey( hKey );
+		return false;
+	}
+
+   enginePath = BGpath;
+
+
+    result = RegQueryValueEx( hKey, LOG_PATH_ELEMENT, NULL, NULL, (LPBYTE)BGpath, &bufLen);
+    if( result != ERROR_SUCCESS )
+	{
+    	CLog::Log(LOGERROR,"Can't get ACEEngine install dir %s", LOG_PATH_ELEMENT);
+		RegCloseKey( hKey );
+		return false;
+	}
+
+    installDir = BGpath;
+
+    RegCloseKey( hKey );
+
+    //get port
+    std::string line;
+    //std::ifstream portfile("file.txt");
+    //std::stringstream buffer;
+    //buffer << portfile.rdbuf();
+    std:string filename(installDir+"\\"+BG_PORT_FILE);
+    portfile.open(filename);
+    	if(!portfile.good())
+    	{
+    		CLog::Log(LOGERROR,"Can't get ACEEngine port file %s", filename.c_str());
+    		return false;
+    	}
+
+    	while(!portfile.eof())
+    	{
+    		std::getline(portfile, line);
+    		CStdString cline=line;
+    		cline.Trim();
+    		if(!cline.IsEmpty())
+    		{
+    			std::istringstream buffer(cline);
+    			int value;
+    			if((buffer >> value).fail())
+    			{
+    			      //ERROR
+    	    		CLog::Log(LOGERROR,"Can't get ACEEngine port %s", cline.c_str());
+    	    		portfile.close();
+    	    		return false;
+    			}
+    			CLog::Log(LOGNOTICE,"ACEEngine port is %i", value);
+    			mConnection->setPort(value);
+    			break;
+    		}
+
+    	}
+    	portfile.close();
+
+    	return true;
+
+#else
+    	return true;
+#endif
+}
+
 /*
  * start up bgprocess
  */
@@ -435,25 +536,7 @@ bool P2PControl::startBGProcess()
 
 	bool started=false;
 #ifdef _WIN32
-    LONG result;
-    HKEY hKey;
-    CHAR BGpath[256]; // TODO : Fix this
-    DWORD bufLen = sizeof( BGpath );
 
-    /* Look in the Windows registry to get the path of the BG */
-    result = RegOpenKeyEx( HKEY_LOCAL_MACHINE, PLUGIN_REG_KEY, 0, KEY_QUERY_VALUE, &hKey );
-    if( result != ERROR_SUCCESS )
-	{
-		RegCloseKey( hKey );
-		return false;
-	}
-    result = RegQueryValueEx( hKey, BG_PATH_ELEMENT, NULL, NULL, (LPBYTE)BGpath, &bufLen);
-    if( result != ERROR_SUCCESS )
-	{
-		RegCloseKey( hKey );
-		return false;
-	}
-    RegCloseKey( hKey );
 
     /* Set up variables */
     STARTUPINFOA startupInfo;
@@ -464,7 +547,7 @@ bool P2PControl::startBGProcess()
 
     CLog::Log(LOGNOTICE, "Starting BG Process..." );
     /* Finally start the BG Process */
-    started = CreateProcess( BGpath,
+    started = CreateProcess( enginePath.c_str(),
         NULL,
         NULL,
         NULL,

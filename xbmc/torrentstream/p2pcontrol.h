@@ -108,6 +108,7 @@ class BGPConnection
   bool sendMsg( const std::string& ) const;
   bool sendMsgSync( const std::string& cmd, std::string& retval );
   bool recvMsg( std::string& );
+  void setPort(const int port);
 
   std::string getAddress() { return mBGAddress; }
   int getPort() { return mPort; }
@@ -173,11 +174,14 @@ template <class T> class EventHandlerWrap_NonStatic : public EventHandlerWrap
  * P2PControl
  *************************/
 
-/* constants */
-const char PLUGIN_REG_KEY[] = "Software\\TSPlugin";
-const char BG_PATH_ELEMENT[] = "BGProcessPath";
+/* constants for win*/
+const char PLUGIN_REG_KEY[] = "HKEY_CURRENT_USER\\Software\\ACEStream";
+const char BG_PATH_ELEMENT[] = "EnginePath";
+const char BG_PORT_FILE[] = "acestream.port";
 const char LOG_PATH_ELEMENT[] = "InstallDir";
 const char LOG_FILE_NAME[] = "tsplugin.log";
+
+
 
 /* Event Callback types */
 enum bg_event_t {
@@ -238,6 +242,7 @@ class P2PControl
   bool playback( const std::string target, int percent );
   bool userdata( int gender, int age );
   bool checkBG(bool);
+  bool readBGconfig();
 
   void regEventCB( bg_event_t event, void (*callback)( const char* ) )
   {
@@ -269,6 +274,9 @@ class P2PControl
   /* Variable Members */
   BGPConnection* mConnection;
   protocol_status_t mProtoState;
+
+  CStdString enginePath;
+  CStdString installDir;
 
   /* Thread and Sync */
   event_cb_map_t mEventCBMap;  // Association event/callback
