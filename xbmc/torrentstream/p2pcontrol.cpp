@@ -490,7 +490,7 @@ bool P2PControl::readBGconfig()
     //buffer << portfile.rdbuf();
     std::string filename(installDir+"\\"+BG_PORT_FILE);
     std::ifstream portfile;
-    portfile.open(filename,ifstream::in);
+    portfile.open(filename.c_str(),std::ifstream::in);
     	if(!portfile.good())
     	{
     		CLog::Log(LOGERROR,"Can't get ACEEngine port file %s", filename.c_str());
@@ -524,6 +524,7 @@ bool P2PControl::readBGconfig()
     	return true;
 
 #else
+
     	return true;
 #endif
 }
