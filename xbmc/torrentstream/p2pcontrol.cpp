@@ -280,10 +280,17 @@ bool P2PControl::checkBG(bool startup)
         	//std::cout << conn << std::endl;
         	mConnection->disconnect();
 #ifdef _WIN32
-        	Sleep(100);
+        	Sleep(1000);
 #else
-        	usleep(100000);
+        	sleep(1);
 #endif
+
+        	if(!readBGconfig()) //check port in file
+        	{
+        		CLog::Log(LOGERROR,"read config error... Check your version of ACEStream (http://www.acestream.org)  and update if old!");
+        		return false;
+        	}
+
         	i--;
         }
 
@@ -594,6 +601,7 @@ bool P2PControl::startBGProcess()
 	int pid, status;
 	CLog::Log(LOGNOTICE, "Starting BG Process..." );
 	system("/usr/bin/acestreamengine-client-gtk &");
+
 	//CApplicationMessenger::Get().ExecOS("/usr/bin/acestreamengine-client-gtk",0);
 	sleep(2);
 	started=true;

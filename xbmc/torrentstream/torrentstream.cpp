@@ -7,12 +7,15 @@
 #include "utils/CharsetConverter.h"
 #include "playlists/PlayListTorrent.h"
 #include "ApplicationMessenger.h"
+#include "guilib/GUIWindowManager.h"
 #include <stdlib.h>
 #include <iostream>
 CTorrentStream::CTorrentStream(void)
 {
 	p_p2pcontrol = NULL;
 	Clear();
+	progress_dlg = NULL;
+//	busy_dlg = NULL;
 }
 
 CTorrentStream::~CTorrentStream(void)
@@ -21,6 +24,15 @@ CTorrentStream::~CTorrentStream(void)
 	Stop();
 	if(p_p2pcontrol)
 		delete p_p2pcontrol;
+	if(progress_dlg){
+		progress_dlg->Close();
+		//delete progress_dlg;
+		progress_dlg = NULL;
+	}
+
+	/*if(busy_dlg){
+		busy_dlg->Close();
+	}*/
 }
 
 /*
@@ -145,12 +157,30 @@ bool CTorrentStream::Load( const std::string id )
  */
 bool CTorrentStream::Start( CFileItemPtr item , int playlist)
 {
+
+	if(progress_dlg == NULL)
+	{
+		progress_dlg = (CGUIDialogProgress *)g_windowManager.GetWindow(WINDOW_DIALOG_PROGRESS);
+		progress_dlg->SetHeading("ACEStream");
+	}
+	//progress_dlg->ShowProgressBar(false);
+
+	progress_dlg->SetLine(1, "Loading torrentstream ...");
+	progress_dlg->Progress();
+
+	 CApplicationMessenger::Get().Show(progress_dlg);
+	//progress_dlg->StartModal();
 	/* initialization */
 	if( !isInitialized() )
 	{
 		if( !Initialize() )
 		{
 			CLog::Log(LOGERROR, "%s - Cannot initialize bgprocess!", __FUNCTION__);
+
+			progress_dlg->SetLine(1, "Engine not worked or old");
+			progress_dlg->Progress();
+
+			sleep(2);
 			return false;
 		}
 		SendUserData( 1, 3 );
@@ -177,6 +207,9 @@ bool CTorrentStream::Start( CFileItemPtr item , int playlist)
 	if(!item->IsLoadedTorrent())
 	{
 		Load(item->GetPath());
+		progress_dlg->SetLine(1, "Error while load torrent");
+		progress_dlg->Progress();
+		sleep(2);
 		return false;
 	}
 
@@ -227,10 +260,14 @@ bool CTorrentStream::Start( CFileItemPtr item , int playlist)
 		_id.append(indexes);
 	std::cout << "__t_id: " << _id << std::endl;
 	/* executing START command ( param fileindexes=="" because all indexes we are already in _id)  and set flags*/
+	progress_dlg->SetLine(1, "Starting torrentstream ...");
+	progress_dlg->Progress();
 	b_started = b_waiting_main_content = p_p2pcontrol->start(i_type, _id, "", 6);
 
 	if(!b_started) {
 		CLog::Log(LOGERROR,"Start: restart engine after error");
+		progress_dlg->SetLine(1, "Error while load torrent");
+		progress_dlg->Progress();
 		Initialize();
 	}
 
@@ -475,6 +512,11 @@ std::string CTorrentStream::ParseStatusMessage( const char* statusstr )
 			res.append( values[2] );
 			psz_p2perror.assign(values[2]);
 		}
+		else if(values[0].compare("main:err")==0)
+		{
+			res.append( values[2] );
+			psz_p2perror.assign(values[2]);
+		}
 	}
 	values.clear();
 
@@ -535,6 +577,15 @@ void CTorrentStream::onP2PPlay( const char* stream )
 
 	p_current_item->SetPath(_stream);
 	SendPlayback(0,1);
+	if(progress_dlg != NULL)
+	{
+		//CApplicationMessenger::Get().Close(progress_dlg, true, true, 0, false);
+		progress_dlg->Close();
+		//progress_dlg = NULL;
+		if(progress_dlg == NULL)
+			std::cout << "Closed!" << std::endl;
+		//progress_dlg = NULL;
+	}
     CApplicationMessenger::Get().PlayFile(*p_current_item,false);
 
 /*	if(g_playlistPlayer.Play(*p_current_item))
@@ -656,6 +707,13 @@ void CTorrentStream::onP2PStatus( const char* statusstr )
 {
 	CLog::Log(LOGNOTICE,"onP2PStatus: %s", statusstr);
 	psz_p2pstatus.assign( ParseStatusMessage(statusstr) );
+	if(progress_dlg != NULL)
+	{
+		progress_dlg->SetLine(1,psz_p2pstatus);
+		progress_dlg->Progress();
+		//progress_dlg = NULL;
+	}
+
 }
 
 /*

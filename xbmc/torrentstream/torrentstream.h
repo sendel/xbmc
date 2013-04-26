@@ -17,6 +17,7 @@
 #include "FileItem.h"
 #include <vector>
 #include <sstream>
+#include "dialogs/GUIDialogProgress.h"
 
 //split for std::string
 static std::vector<std::string> &_split(const std::string &s, char delim, std::vector<std::string> &elems)
@@ -107,6 +108,11 @@ private:
 	bool b_playback_75;  // playback 75% sent
 	bool b_playback_100;  // playback 100% sent
 	bool b_duration;  // duration sent
+
+	//dialogs
+	CGUIDialogProgress *progress_dlg;
+	//CGUIDialogBusy* busy_dlg;
+
 };
 
 extern CTorrentStream g_torrentStream;

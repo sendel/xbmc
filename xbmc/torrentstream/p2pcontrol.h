@@ -269,7 +269,7 @@ class P2PControl
   static void *eventLoop( void* );
 #endif
   /* Back Ground Process */
-  static bool startBGProcess();
+  bool startBGProcess();
 
   /* Variable Members */
   BGPConnection* mConnection;
