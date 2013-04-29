@@ -180,7 +180,12 @@ bool CTorrentStream::Start( CFileItemPtr item , int playlist)
 			progress_dlg->SetLine(1, "Engine not worked or old");
 			progress_dlg->Progress();
 
+#ifdef _WIN32
+			Sleep(2000);
+#else
 			sleep(2);
+#endif
+
 			return false;
 		}
 		SendUserData( 1, 3 );
@@ -209,7 +214,11 @@ bool CTorrentStream::Start( CFileItemPtr item , int playlist)
 		Load(item->GetPath());
 		progress_dlg->SetLine(1, "Error while load torrent");
 		progress_dlg->Progress();
-		sleep(2);
+#ifdef _WIN32
+			Sleep(2000);
+#else
+			sleep(2);
+#endif
 		return false;
 	}
 
